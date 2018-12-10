@@ -102,45 +102,27 @@
 import { common } from '@app/helpers'
 import { Block, Tx } from '@app/models'
 import store from '@app/states'
-import Vue from 'vue'
 import ethUnits from 'ethereumjs-units'
 import Bn from 'bignumber.js'
 import NumberFormatter from 'number-formatter'
+import Vue from "vue"
+import { Component, Prop, Provide } from 'vue-property-decorator'
 
-export default Vue.extend({
-  name: 'BlockView',
-  props: {
-    block: {
-      type: Object,
-      default: null
-    },
-    isMined: {
-      type: Boolean,
-      default: true
-    },
-    prev: {
-      type: Number
-    },
-    uncles :{
-      type: Array,
-    },
-    isNotMinedBlock:{
-      type: Boolean,
-      default: false
-    }
-  },
-  data() {
-    return {
-      showMore: false,
-      items: [],
-      moreItems: [],
-      dialog: false
-    }
-  },
-  methods: {
+@Component
+export default class BlockView extends Vue{
+    @Prop(Object) block: any
+    @Prop(Boolean) isMined: boolean
+    @Prop(Number) prev: number
+    @Prop(Array) uncles: []
+    @Prop(Boolean) isNotMinedBlock: boolean
+    @Provide() showMore = false
+    @Provide() items = []
+    @Provide() moreItems = []
+    @Provide() dialog = false
+
     setView() {
       this.showMore = !this.showMore
-    },
+    }
     setItems() {
       const newItems = [
         {
@@ -191,7 +173,7 @@ export default Vue.extend({
         newItems.unshift(item)
       }
       this.items = newItems
-    },
+    }
     setMore() {
       this.moreItems = [
         {
@@ -214,10 +196,6 @@ export default Vue.extend({
           title: this.$i18n.t('block.data'),
           details: this.block.getExtraData().toString()
         }
-        /*{
-                title: this.$i18n.t('block.data'),
-                details: this.block.getExtraData().toString()
-              }*/
       ]
       if (!this.isUncle) {
         const newItems = [
@@ -258,52 +236,51 @@ export default Vue.extend({
           this.moreItems.push(i)
         })
       }
-    },
+    }
     nextBlock() {
       const next = this.block.getNumber() + 1
       return '/block/' + next.toString()
-    },
+    }
     previousBlock() {
       return this.block ? '/block/' + (this.block.getNumber() - 1).toString() : '/block/' + this.prev.toString()
     }
-  },
-  computed: {
-    isUncle() {
+    /* Computed */
+
+    get isUncle() {
       return this.block && this.block.getIsUncle()
-    },
-    update() {
+    }
+    get update() {
       return String
-    },
-    more() {
+    }
+    get more() {
       return this.showMore
-    },
-    hasUncles() {
+    }
+    get hasUncles() {
       if(this.block){
         return this.block.getHasUncle()
       }
       return false
-    },
-    mined() {
+    }
+    get mined() {
       if (this.isMined) {
         this.setItems()
         this.setMore()
       }
       return this.isMined
-    },
-    formatTime(){
+    }
+    get formatTime(){
       const date = new Date(this.block.getTimestamp()).toString()
       return '('+ date +')'
-    },
-    minerReward(){
+    }
+    get minerReward(){
       const minerrewards = ethUnits.convert(new Bn(this.block.getMinerReward()).toFixed(), 'wei', 'eth')
       return NumberFormatter('#,##0.##', minerrewards) + ' ' + this.$i18n.t('common.eth')
-    },
-    uncleReward(){
+    }
+    get uncleReward(){
       const uncelerewards =  ethUnits.convert(new Bn(this.block.getUncleReward()).toFixed(), 'wei', 'eth')
       return NumberFormatter('#,##0.##', uncelerewards) + ' ' + this.$i18n.t('common.eth')
     }
-  }
-})
+}
 </script>
 
 <style scoped lang="less">
